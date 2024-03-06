@@ -1,0 +1,62 @@
+#!/bin/bash
+
+OPTIND=1
+
+REF0=$(git log --reverse --pretty=tformat:%H | head -n 1)
+REF1="HEAD"
+TEAM=""
+REPO="$PWD"
+
+USAGE="
+$0 [-b ref_base] [-r ref_head] [-m user] <repository path>
+
+Example:
+  $0 -b badbeef -r feedbeef -m jack.torrance -m william.shakespeare ~/git/repo
+"
+
+if [ "${#}" = "0" ]; then
+  echo "${USAGE}"
+  exit 0
+fi
+
+while getopts "hb:r:m:" opt; do
+  case "$opt" in
+    h)
+      echo "${USAGE}"
+      exit 0
+      ;;
+    b)
+      REF0=${OPTARG}
+      ;;
+    r)
+      REF1=${OPTARG}
+      ;;
+    m)
+      TEAM="${OPTARG} ${TEAM}"
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+[ "${1:-}" = "--" ] && shift
+
+AUTHORS=""
+for MEMBER in ${TEAM}; do
+  AUTHORS="${AUTHORS} --author ${MEMBER}"
+done
+
+REPO="."
+
+pushd $REPO >> /dev/null
+
+printf "%-15s%10s%10s%10s\n" "USER" "ADDED" "DELETED" "LOC"
+for MEMBER in ${TEAM}; do
+  printf "%-15s" "${MEMBER}"
+  git log ${REF0}..${REF1} --author ${MEMBER} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "%10s%10s%10s\n", add, subs, loc }' -
+done
+
+printf "%s\n%-15s" "--" "whole team"
+git log ${REF0}..${REF1}  ${AUTHORS} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "%10s%10s%10s\n", add, subs, loc }' -
+
+popd >> /dev/null
