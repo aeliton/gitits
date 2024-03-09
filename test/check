@@ -5,10 +5,13 @@ function assert_equal() {
   command=$1
   expected=$2
 
-  if [ "$(eval $command)" == "${expected}" ]; then
+
+  output=$(eval $command)
+  if [ "${output}" == "${expected}" ]; then
     printf "%-50s \U2713\n" "$command" 
   else
     printf "%-50s \U2717\n" "$command" 
+    printf "%-10s: %s\n%-10s: %s" "output" "${output}" "expected" "${expected}"
     return 1
   fi
 }
