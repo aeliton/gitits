@@ -2,7 +2,8 @@
 
 OPTIND=1
 
-REF0=$(git log --reverse --pretty=tformat:%H | head -n 1)
+ROOT=$(git log --reverse --pretty=tformat:%H | head -n 1)
+REF0=
 REF1="HEAD"
 TEAM=""
 REPO="$PWD"
@@ -26,7 +27,9 @@ while getopts "hb:r:m:s" opt; do
       exit 0
       ;;
     b)
-      REF0=${OPTARG}
+      if [ "$(git rev-parse ${OPTARG})" != "$ROOT" ]; then
+        REF0="$(git rev-parse ${OPTARG}^)"
+      fi
       ;;
     r)
       REF1=${OPTARG}
@@ -59,7 +62,13 @@ if [ ! -d "$REPO" ]; then
   exit 1
 fi
 
+
 pushd $REPO >> /dev/null
+
+REF_ARG="$REF1"
+if [ -n "$REF0" ]; then
+  REF_ARG="${REF1}"
+fi
 
 STATS_FORMAT=" %s %s %s\n"
 if [ -z "${SCRIPT}" ]; then
@@ -73,12 +82,12 @@ for MEMBER in ${TEAM}; do
   else
     printf "%s" "${MEMBER}"
   fi
-  git log ${REF0}..${REF1} --author ${MEMBER} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
+  git log "$REF_ARG" --author ${MEMBER} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
 done
 
 if [ -z "${SCRIPT}" ]; then
   printf "%s\n%-15s" "--" "whole team"
-  git log ${REF0}..${REF1}  ${AUTHORS} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
+  git log "$REF_ARG" ${AUTHORS} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
 fi
 
 popd >> /dev/null
