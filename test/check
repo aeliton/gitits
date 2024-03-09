@@ -9,5 +9,6 @@ function assert_equal() {
     printf "%-50s \U2713\n" "$command" 
   else
     printf "%-50s \U2717\n" "$command" 
+    return 1
   fi
 }
