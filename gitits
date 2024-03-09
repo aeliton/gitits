@@ -8,10 +8,10 @@ TEAM=""
 REPO="$PWD"
 
 USAGE="
-$0 [-b ref_base] [-r ref_head] [-m user] <repository path>
+$(basename $0) [-s] [-b ref_base] [-r ref_head] [-m user] <repository path>
 
 Example:
-  $0 -b badbeef -r feedbeef -m jack.torrance -m william.shakespeare ~/git/repo
+  $(basename $0) -b badbeef -r feedbeef -m jack.torrance -m william.shakespeare ~/git/repo
 "
 
 if [ "${#}" = "0" ]; then
@@ -19,7 +19,7 @@ if [ "${#}" = "0" ]; then
   exit 0
 fi
 
-while getopts "hb:r:m:" opt; do
+while getopts "hb:r:m:s" opt; do
   case "$opt" in
     h)
       echo "${USAGE}"
@@ -34,6 +34,9 @@ while getopts "hb:r:m:" opt; do
     m)
       TEAM="${OPTARG} ${TEAM}"
       ;;
+    s)
+      SCRIPT=1
+      ;;
   esac
 done
 
@@ -42,6 +45,7 @@ shift $((OPTIND-1))
 [ "${1:-}" = "--" ] && shift
 
 AUTHORS=""
+
 for MEMBER in ${TEAM}; do
   AUTHORS="${AUTHORS} --author ${MEMBER}"
 done
@@ -50,13 +54,24 @@ REPO="."
 
 pushd $REPO >> /dev/null
 
-printf "%-15s%10s%10s%10s\n" "USER" "ADDED" "DELETED" "LOC"
+STATS_FORMAT=" %s %s %s\n"
+if [ -z "${SCRIPT}" ]; then
+  printf "%-15s%10s%10s%10s\n" "USER" "ADDED" "DELETED" "LOC"
+  STATS_FORMAT=" %10s%10s%10s\n"
+fi
+
 for MEMBER in ${TEAM}; do
-  printf "%-15s" "${MEMBER}"
-  git log ${REF0}..${REF1} --author ${MEMBER} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "%10s%10s%10s\n", add, subs, loc }' -
+  if [ -z "${SCRIPT}" ]; then
+    printf "%-15s" "${MEMBER}"
+  else
+    printf "%s" "${MEMBER}"
+  fi
+  git log ${REF0}..${REF1} --author ${MEMBER} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
 done
 
-printf "%s\n%-15s" "--" "whole team"
-git log ${REF0}..${REF1}  ${AUTHORS} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "%10s%10s%10s\n", add, subs, loc }' -
+if [ -z "${SCRIPT}" ]; then
+  printf "%s\n%-15s" "--" "whole team"
+  git log ${REF0}..${REF1}  ${AUTHORS} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
+fi
 
 popd >> /dev/null
