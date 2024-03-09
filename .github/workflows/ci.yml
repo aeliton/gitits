@@ -15,5 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run a one-line script
-        run: $GITHUB_WORKSPACE/test/test_gitits
+      - name: clone
+        run: git clone https://github.com/aeliton/gitits.git $GITHUB_WORKSPACE/gitits_clone
+
+      - name: run tests
+        run: $GITHUB_WORKSPACE/test/test_gitits $GITHUB_WORKSPACE/gitits_clone
