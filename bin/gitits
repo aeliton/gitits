@@ -2,7 +2,6 @@
 
 OPTIND=1
 
-ROOT=$(git log --reverse --pretty=tformat:%H | head -n 1)
 REF0=
 REF1="HEAD"
 TEAM=""
@@ -27,9 +26,7 @@ while getopts "hb:r:m:s" opt; do
       exit 0
       ;;
     b)
-      if [ "$(git rev-parse ${OPTARG})" != "$ROOT" ]; then
-        REF0="$(git rev-parse ${OPTARG}^)"
-      fi
+      REF0="${OPTARG}"
       ;;
     r)
       REF1=${OPTARG}
@@ -47,31 +44,43 @@ shift $((OPTIND-1))
 
 [ "${1:-}" = "--" ] && shift
 
-if [ -z "${TEAM}" ]; then
-  TEAM=$(git log --pretty="%ae" | sort -u | cut -f1 -d'@')
-fi
-
 AUTHORS=""
-
-for MEMBER in ${TEAM}; do
-  AUTHORS="${AUTHORS} --author ${MEMBER}"
-done
 
 if [ -n "$1" ]; then
   REPO="$1"
 fi
 
 if [ ! -d "$REPO" ]; then
+  echo "$REPO is not a directory"
+  exit 1
+fi
+
+# only call git commands inside the repository
+pushd $REPO > /dev/null
+
+if ! git status > /dev/null 2>&1; then
   echo "$REPO is not a git repository"
   exit 1
 fi
 
+for MEMBER in ${TEAM}; do
+  AUTHORS="${AUTHORS} --author ${MEMBER}"
+done
 
-pushd $REPO >> /dev/null
+ROOT=$(git log --reverse --pretty=tformat:%H | head -n 1)
+if [ -n "$REF0" ] && [ "$(git rev-parse ${REF0})" != "$ROOT" ]; then
+  REF0="$(git rev-parse ${REF0}^)"
+else
+  REF0=
+fi
 
 REF_ARG="$REF1"
 if [ -n "$REF0" ]; then
   REF_ARG="${REF1}"
+fi
+
+if [ -z "${TEAM}" ]; then
+  TEAM=$(git log "${REF_ARG}" --pretty="%ae" | sort -u | cut -f1 -d'@')
 fi
 
 STATS_FORMAT=" %s %s %s\n"
@@ -94,4 +103,4 @@ if [ -z "${SCRIPT}" ]; then
   git log "$REF_ARG" ${AUTHORS} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
 fi
 
-popd >> /dev/null
+popd > /dev/null
