@@ -18,3 +18,8 @@ SECOND=f06107
 assert_equal "gitits -s -b ${BASE} -r ${SECOND} -m renato ${REPO_PATH}" "renato 1 1 0"
 
 assert_equal "gitits -s -b ${SECOND} -r ${SECOND} -m renato ${REPO_PATH}" "renato 1 1 0"
+
+# multiline output
+expected="aeliton 62 0 62
+renato 1 1 0"
+assert_equal "gitits -s -r ${SECOND} ${REPO_PATH}" "${expected}"

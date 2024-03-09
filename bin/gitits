@@ -47,6 +47,10 @@ shift $((OPTIND-1))
 
 [ "${1:-}" = "--" ] && shift
 
+if [ -z "${TEAM}" ]; then
+  TEAM=$(git log --pretty="%ae" | sort -u | cut -f1 -d'@')
+fi
+
 AUTHORS=""
 
 for MEMBER in ${TEAM}; do
