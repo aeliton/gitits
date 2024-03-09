@@ -11,7 +11,7 @@ function assert_equal() {
     printf "%-50s \U2713\n" "$command" 
   else
     printf "%-50s \U2717\n" "$command" 
-    printf "%-10s: %s\n%-10s: %s" "output" "${output}" "expected" "${expected}"
+    printf "%-10s: %s\n%-10s: %s\n" "output" "${output}" "expected" "${expected}"
     return 1
   fi
 }
