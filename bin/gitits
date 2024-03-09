@@ -50,7 +50,14 @@ for MEMBER in ${TEAM}; do
   AUTHORS="${AUTHORS} --author ${MEMBER}"
 done
 
-REPO="."
+if [ -n "$1" ]; then
+  REPO="$1"
+fi
+
+if [ ! -d "$REPO" ]; then
+  echo "$REPO is not a git repository"
+  exit 1
+fi
 
 pushd $REPO >> /dev/null
 

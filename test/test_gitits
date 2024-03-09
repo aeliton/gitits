@@ -2,6 +2,11 @@
 
 SRC_PATH=$(dirname -- "${BASH_SOURCE[0]}")
 
+REPO_PATH="${SRC_PATH}/.."
+if [ -n "$1" ]; then
+  REPO_PATH="$1"
+fi
+
 . $SRC_PATH/check
 
 
@@ -10,4 +15,4 @@ PATH=$PATH:$SRC_PATH/../bin
 BASE=afb39f
 SECOND=f06107
 
-assert_equal "gitits -s -b ${BASE} -r ${SECOND} -m renato" "renato 1 1 0"
+assert_equal "gitits -s -b ${BASE} -r ${SECOND} -m renato ${REPO_PATH}" "renato 1 1 0"
