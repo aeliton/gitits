@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+function assert_equal() {
+  [[ "$#" -ne 2 ]] && echo "${FUNCNAME} must receive two arguments, received $#" && exit 1
+  command=$1
+  expected=$2
+
+  if [ "$(eval $command)" == "${expected}" ]; then
+    printf "%-50s \U2713\n" "$command" 
+  else
+    printf "%-50s \U2717\n" "$command" 
+  fi
+}

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+SRC_PATH=$(dirname -- "${BASH_SOURCE[0]}")
+
+. $SRC_PATH/check
+
+
+PATH=$PATH:$SRC_PATH/../bin
+
+BASE=afb39f
+SECOND=f06107
+
+assert_equal "gitits -s -b ${BASE} -r ${SECOND} -m renato" "renato 1 1 0"
