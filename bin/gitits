@@ -14,11 +14,6 @@ Example:
   $(basename $0) -b badbeef -r feedbeef -m jack.torrance -m william.shakespeare ~/git/repo
 "
 
-if [ "${#}" = "0" ]; then
-  echo "${USAGE}"
-  exit 0
-fi
-
 while getopts "hb:r:m:s" opt; do
   case "$opt" in
     h)
