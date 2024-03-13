@@ -54,7 +54,7 @@ fi
 pushd $repo > /dev/null
 
 if ! git status > /dev/null 2>&1; then
-  echo "$REPO is not a git repository"
+  echo "$repo is not a git repository"
   exit 1
 fi
 
