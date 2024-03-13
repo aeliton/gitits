@@ -5,12 +5,14 @@ function assert_equal() {
   command=$1
   expected=$2
 
+  green='\033[0;32m\U2713\033[0m'
+  red='\033[0;31m\U2717\033[0m'
 
   output=$(eval $command)
   if [ "${output}" == "${expected}" ]; then
-    printf "%-50s \U2713\n" "$command" 
+    printf "%-50s $green\n" "$command" 
   else
-    printf "%-50s \U2717\n" "$command" 
+    printf "%-50s $red\n" "$command" 
     printf "%-10s: %s\n%-10s: %s\n" "output" "${output}" "expected" "${expected}"
     return 1
   fi
