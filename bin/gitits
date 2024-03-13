@@ -17,17 +17,17 @@ Example:
 while getopts "hb:r:m:s" opt; do
   case "$opt" in
     h)
-      echo "${usage}"
+      echo "$usage"
       exit 0
       ;;
     b)
-      ref0="${OPTARG}"
+      ref0="$OPTARG"
       ;;
     r)
-      ref1=${OPTARG}
+      ref1=$OPTARG
       ;;
     m)
-      team="${OPTARG} ${team}"
+      team="$OPTARG $team"
       ;;
     s)
       script=1
@@ -58,12 +58,12 @@ if ! git status > /dev/null 2>&1; then
   exit 1
 fi
 
-for member in ${team}; do
-  authors="${authors} --author ${member}"
+for member in $team; do
+  authors="$authors --author $member"
 done
 
 root=$(git log --reverse --pretty=tformat:%H | head -n 1)
-if [ -n "$ref0" ] && [ "$(git rev-parse ${ref0})" != "$root" ]; then
+if [ -n "$ref0" ] && [ "$(git rev-parse $ref0)" != "$root" ]; then
   ref0="$(git rev-parse ${ref0}^)"
 else
   ref0=
@@ -71,31 +71,31 @@ fi
 
 ref_arg="$ref1"
 if [ -n "$ref0" ]; then
-  ref_arg="${ref1}"
+  ref_arg="$ref1"
 fi
 
-if [ -z "${team}" ]; then
-  team=$(git log "${ref_arg}" --pretty="%ae" | sort -u | cut -f1 -d'@')
+if [ -z "$team" ]; then
+  team=$(git log "$ref_arg" --pretty="%ae" | sort -u | cut -f1 -d'@')
 fi
 
 stats_format=" %s %s %s\n"
-if [ -z "${script}" ]; then
+if [ -z "$script" ]; then
   printf "%-15s%10s%10s%10s\n" "USER" "ADDED" "DELETED" "LOC"
   stats_format=" %10s%10s%10s\n"
 fi
 
-for member in ${team}; do
-  if [ -z "${script}" ]; then
-    printf "%-15s" "${member}"
+for member in $team; do
+  if [ -z "$script" ]; then
+    printf "%-15s" "$member"
   else
-    printf "%s" "${member}"
+    printf "%s" "$member"
   fi
-  git log "$ref_arg" --author ${member} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$stats_format" -
+  git log "$ref_arg" --author $member --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$stats_format" -
 done
 
-if [ -z "${script}" ]; then
+if [ -z "$script" ]; then
   printf "%s\n%-15s" "--" "whole team"
-  git log "$ref_arg" ${authors} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$stats_format" -
+  git log "$ref_arg" $authors --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$stats_format" -
 fi
 
 popd > /dev/null

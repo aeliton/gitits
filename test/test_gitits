@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-src_path=$(dirname -- "${BASH_SOURCE[0]}")
+src_path=$(dirname -- "$BASH_SOURCE[0]")
 
-repo_path="${src_path}/.."
+repo_path="$src_path/.."
 if [ -n "$1" ]; then
   repo_path="$1"
 fi
@@ -15,11 +15,11 @@ PATH=$PATH:$src_path/../bin
 base=afb39f
 second=f06107
 
-assert_equal "gitits -s -b ${base} -r ${second} -m renato ${repo_path}" "renato 1 1 0"
+assert_equal "gitits -s -b $base -r $second -m renato $repo_path" "renato 1 1 0"
 
-assert_equal "gitits -s -b ${second} -r ${second} -m renato ${repo_path}" "renato 1 1 0"
+assert_equal "gitits -s -b $second -r $second -m renato $repo_path" "renato 1 1 0"
 
 # multiline output
 expected="aeliton 62 0 62
 renato 1 1 0"
-assert_equal "gitits -s -r ${second} ${repo_path}" "${expected}"
+assert_equal "gitits -s -r $second $repo_path" "$expected"
