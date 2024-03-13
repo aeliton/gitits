@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function assert_equal() {
-  [[ "$#" -ne 2 ]] && echo "${FUNCNAME} must receive two arguments, received $#" && exit 1
+  [[ "$#" -ne 2 ]] && echo "$FUNCNAME must receive two arguments, received $#" && exit 1
   command=$1
   expected=$2
 
@@ -9,11 +9,11 @@ function assert_equal() {
   red='\033[0;31m\U2717\033[0m'
 
   output=$(eval $command)
-  if [ "${output}" == "${expected}" ]; then
+  if [ "${output}" == "$expected" ]; then
     printf "%-50s $green\n" "$command" 
   else
     printf "%-50s $red\n" "$command" 
-    printf "%-10s: %s\n%-10s: %s\n" "output" "${output}" "expected" "${expected}"
+    printf "%-10s: %s\n%-10s: %s\n" "output" "$output" "expected" "$expected"
     return 1
   fi
 }
