@@ -23,3 +23,10 @@ assert_equal "gitits -s -b $second -r $second -m renato $repo_path" "renato 1 1 
 expected="aeliton 62 0 62
 renato 1 1 0"
 assert_equal "gitits -s -r $second $repo_path" "$expected"
+
+# invalid git repo
+invalid_repo_path=$(mktemp -d)
+expected="$invalid_repo_path is not a git repository"
+assert_equal "gitits $invalid_repo_path" "$expected"
+assert_equal "gitits -s $invalid_repo_path" "$expected"
+rmdir "$invalid_repo_path"
