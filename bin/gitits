@@ -2,12 +2,12 @@
 
 OPTIND=1
 
-REF0=
-REF1="HEAD"
-TEAM=""
-REPO="$PWD"
+ref0=
+ref1="HEAD"
+team=""
+repo="$PWD"
 
-USAGE="
+usage="
 $(basename $0) [-s] [-b ref_base] [-r ref_head] [-m user] <repository path>
 
 Example:
@@ -17,20 +17,20 @@ Example:
 while getopts "hb:r:m:s" opt; do
   case "$opt" in
     h)
-      echo "${USAGE}"
+      echo "${usage}"
       exit 0
       ;;
     b)
-      REF0="${OPTARG}"
+      ref0="${OPTARG}"
       ;;
     r)
-      REF1=${OPTARG}
+      ref1=${OPTARG}
       ;;
     m)
-      TEAM="${OPTARG} ${TEAM}"
+      team="${OPTARG} ${team}"
       ;;
     s)
-      SCRIPT=1
+      script=1
       ;;
   esac
 done
@@ -39,63 +39,63 @@ shift $((OPTIND-1))
 
 [ "${1:-}" = "--" ] && shift
 
-AUTHORS=""
+authors=""
 
 if [ -n "$1" ]; then
-  REPO="$1"
+  repo="$1"
 fi
 
-if [ ! -d "$REPO" ]; then
-  echo "$REPO is not a directory"
+if [ ! -d "$repo" ]; then
+  echo "$repo is not a directory"
   exit 1
 fi
 
 # only call git commands inside the repository
-pushd $REPO > /dev/null
+pushd $repo > /dev/null
 
 if ! git status > /dev/null 2>&1; then
   echo "$REPO is not a git repository"
   exit 1
 fi
 
-for MEMBER in ${TEAM}; do
-  AUTHORS="${AUTHORS} --author ${MEMBER}"
+for member in ${team}; do
+  authors="${authors} --author ${member}"
 done
 
-ROOT=$(git log --reverse --pretty=tformat:%H | head -n 1)
-if [ -n "$REF0" ] && [ "$(git rev-parse ${REF0})" != "$ROOT" ]; then
-  REF0="$(git rev-parse ${REF0}^)"
+root=$(git log --reverse --pretty=tformat:%H | head -n 1)
+if [ -n "$ref0" ] && [ "$(git rev-parse ${ref0})" != "$root" ]; then
+  ref0="$(git rev-parse ${ref0}^)"
 else
-  REF0=
+  ref0=
 fi
 
-REF_ARG="$REF1"
-if [ -n "$REF0" ]; then
-  REF_ARG="${REF1}"
+ref_arg="$ref1"
+if [ -n "$ref0" ]; then
+  ref_arg="${ref1}"
 fi
 
-if [ -z "${TEAM}" ]; then
-  TEAM=$(git log "${REF_ARG}" --pretty="%ae" | sort -u | cut -f1 -d'@')
+if [ -z "${team}" ]; then
+  team=$(git log "${ref_arg}" --pretty="%ae" | sort -u | cut -f1 -d'@')
 fi
 
-STATS_FORMAT=" %s %s %s\n"
-if [ -z "${SCRIPT}" ]; then
+stats_format=" %s %s %s\n"
+if [ -z "${script}" ]; then
   printf "%-15s%10s%10s%10s\n" "USER" "ADDED" "DELETED" "LOC"
-  STATS_FORMAT=" %10s%10s%10s\n"
+  stats_format=" %10s%10s%10s\n"
 fi
 
-for MEMBER in ${TEAM}; do
-  if [ -z "${SCRIPT}" ]; then
-    printf "%-15s" "${MEMBER}"
+for member in ${team}; do
+  if [ -z "${script}" ]; then
+    printf "%-15s" "${member}"
   else
-    printf "%s" "${MEMBER}"
+    printf "%s" "${member}"
   fi
-  git log "$REF_ARG" --author ${MEMBER} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
+  git log "$ref_arg" --author ${member} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$stats_format" -
 done
 
-if [ -z "${SCRIPT}" ]; then
+if [ -z "${script}" ]; then
   printf "%s\n%-15s" "--" "whole team"
-  git log "$REF_ARG" ${AUTHORS} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$STATS_FORMAT" -
+  git log "$ref_arg" ${authors} --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf format, add, subs, loc }' format="$stats_format" -
 fi
 
 popd > /dev/null
